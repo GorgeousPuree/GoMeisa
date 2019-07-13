@@ -1,0 +1,80 @@
+body {
+    background-color: #232636;
+    background-size: cover;
+}
+
+.modal-dialog {
+    pointer-events: auto;
+}
+
+.main-section {
+    margin: 0 auto;
+    margin-top: 240px;
+    padding: 0px;
+}
+
+.modal-content {
+    background-color: white;
+    padding-top: 30px;
+    padding-bottom: 20px;
+    box-shadow: 0px 0px 400px #848484;
+    -webkit-box-shadow: 0px 0px 400px #848484;
+    border-radius: 20px;
+}
+
+.form-group input{
+    height: 42px;
+    border-radius: 15px;
+    border-color: black;
+    padding-left: 50px;
+    margin-bottom: 24px;
+    border: 0;
+}
+
+.form-group::before {
+    font-family: 'Font Awesome\ 5 Free';
+    position: absolute;
+    font-size: 25px;
+    color: dimgray;
+    left: 28px;
+    padding-top: 1px;
+}
+
+.email::before {
+    content: "\f1fa";
+}
+
+.pass::before {
+    content: "\f023";
+}
+
+
+button {
+
+    margin-top: 6px;
+    background-color: aqua;
+
+}
+
+.btn {
+    border-radius: 15px;
+    font-size: 18px;
+}
+
+.btn:hover{
+    background: #5C5D65;
+    color: white;
+}
+
+.svg-inline--fa {
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+.registerOrLogin {
+    margin-top: 15px;
+}
+
+.registerOrLogin a {
+    font-size: 17px;
+}
