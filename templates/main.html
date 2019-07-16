@@ -12,6 +12,9 @@
 <form method="POST" action="/logout">
     <input type="submit" value="Выйти из аккаунта">
 </form>
+{{range .}}
+<li><ul>{{.}}</ul></li>
+{{end}}
 </body>
 </html>
 

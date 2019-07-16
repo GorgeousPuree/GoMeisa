@@ -4,7 +4,9 @@ import (
 	"Gomeisa"
 	"Gomeisa/data"
 	"github.com/gorilla/sessions"
+	"log"
 	"net/http"
+	"regexp"
 )
 
 func loginGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,14 +17,16 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session")
 	r.ParseForm()
 	email := r.PostForm.Get("email")
+
 	if !Gomeisa.RowExists("SELECT id FROM users WHERE email=$1", email) {
 		session.AddFlash("Неверный логин")
 		err = session.Save(r, w)
 		if err != nil {
+			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -35,6 +39,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	err = session.Save(r, w)
 
 	if err != nil {
+		Gomeisa.Danger(err, "Ошибка сохранения сессии.")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -47,19 +52,37 @@ func registerGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerPostHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-
-	// do I need it?
-	if err != nil {
-		Gomeisa.Danger(err, "Невозможно считать форму!")
-	}
-
+	session, _ := store.Get(r, "session")
+	r.ParseForm()
 	user := data.UserDB{
 		Email: r.PostFormValue("email"),
 	}
 
-	if err := user.Create(); err != nil {
-		Gomeisa.Danger(err, "Невозможно зарегистрировать пользователя")
+	pattern := `^\w+@\w+\.\w+$`
+
+	if matched, err := regexp.Match(pattern, []byte(user.Email)); !matched || err != nil {
+		session.AddFlash("Недопустимый email!")
+
+		err = session.Save(r, w)
+		if err != nil {
+			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/register", http.StatusFound)
+		return
+	}
+
+	if _, err := user.Create(); err != nil {
+		Gomeisa.Danger(err, "Невозможно зарегистрировать пользователя!")
+		session.AddFlash("Невозможно зарегистрировать пользователя!")
+		err = session.Save(r, w)
+		if err != nil {
+			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -75,47 +98,34 @@ func mainGetHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := session.Save(r, w)
 		if err != nil {
+			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-	}
-
-	/*rows, err := Gomeisa.Db.Query("SELECT name FROM gomeisa.public.")
-	if err != nil {
 		return
 	}
-	//var got []string
-	got := make(map[int]string)
-	for rows.Next() {
-		var id int
-		var name string
-		err = rows.Scan(&id, &name)
-		if err != nil {
-			return
-		}
-		//got = append(got, r)
-		got[id] = name
-	}
-	rows.Close()
-	t.Execute(w, got)*/
 
-	templates.ExecuteTemplate(w, "main.html", nil)
-}
-
-func logoutPostHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "session")
-	if err != nil {
+	user := data.UserDB {Email: userSession.Email}
+	projectsUser, err := data.GetProjectUsers(user)
+	if err!= nil {
+		Gomeisa.Danger(err, "Ошибка считывания проектов пользователя")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	templates.ExecuteTemplate(w, "main.html", projectsUser)
+}
+
+func logoutPostHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "session")
+
 	session.Values["userSession"] = UserSession{}
 	session.Options.MaxAge = -1
 
-	err = session.Save(r, w)
+	err := session.Save(r, w)
 	if err != nil {
+		Gomeisa.Danger(err, "Ошибка сохранения сессии.")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -124,27 +134,51 @@ func logoutPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	userSession := getUserSession(session)
+
 	if auth := userSession.Authenticated; !auth {
 		session.AddFlash("Войдите в аккаунт!")
 
 		err := session.Save(r, w)
 		if err != nil {
+			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-	}
-	r.ParseForm()
 
-	project := data.ProjectDB{Name: r.PostForm.Get("projectName")}
-	if err := project.Create(); err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	r.ParseForm()
+	projectName := r.PostForm.Get("projectName")
+	pattern := `.*\S.*`
+
+	if matched, err := regexp.Match(pattern, []byte(projectName)); !matched || err != nil {
+		log.Printf("Недопустимое имя проекта! %s\n", err)
+		session.AddFlash("Недопустимое имя проекта!")
+
+		err := session.Save(r, w)
+		if err != nil {
+			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/main", http.StatusFound)
+		return
+	}
+
+	project := data.ProjectDB{Name: projectName}
+	user := data.UserDB {Email: userSession.Email}
+
+	err = data.CreateProjectUsers(user, project)
+
+	if err != nil {
 		Gomeisa.Danger(err, "Невозможно создать проект!")
+		log.Println(err)
+		session.AddFlash("Невозможно создать проект!")
+		session.Save(r, w)
 	}
 
 	http.Redirect(w, r, "/main", http.StatusFound)
@@ -158,9 +192,6 @@ func getUserSession(s *sessions.Session) UserSession {
 	if !ok {
 		return UserSession{Authenticated: false}
 	}
+
 	return user
 }
-
-
-
-

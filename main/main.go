@@ -37,6 +37,7 @@ func main() {
 	r.HandleFunc("/create", createPostHandler).Methods("POST")
 
 	r.HandleFunc("/", mainGetHandler)
+
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
 		http.FileServer(http.Dir("./static/"))))
 
@@ -66,6 +67,7 @@ func init() {
 	connStr := "user=postgres password=12345 dbname=gomeisa sslmode=disable"
 	Gomeisa.Db, err = sql.Open("postgres", connStr)
 	if err != nil {
+		Gomeisa.Danger(err, "Ошибка открытия базы данных.")
 		log.Fatal(err)
 	}
 	return
