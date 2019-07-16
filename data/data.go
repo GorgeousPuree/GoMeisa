@@ -5,7 +5,6 @@ import (
 	"database/sql"
 )
 
-
 type Creator interface {
 	Create() (int, error)
 }
@@ -42,4 +41,3 @@ func InsertReturning(query string, args ...interface{}) (*DbRowFromInsert, error
 
 	return &DbRowFromInsert{rows: rows}, nil
 }
-

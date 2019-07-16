@@ -30,8 +30,8 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userSession := &UserSession {
-		Email: email,
+	userSession := &UserSession{
+		Email:         email,
 		Authenticated: true,
 	}
 
@@ -106,9 +106,9 @@ func mainGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := data.UserDB {Email: userSession.Email}
+	user := data.UserDB{Email: userSession.Email}
 	projectsUser, err := data.GetProjectUsers(user)
-	if err!= nil {
+	if err != nil {
 		Gomeisa.Danger(err, "Ошибка считывания проектов пользователя")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -170,7 +170,7 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	project := data.ProjectDB{Name: projectName}
-	user := data.UserDB {Email: userSession.Email}
+	user := data.UserDB{Email: userSession.Email}
 
 	err = data.CreateProjectUsers(user, project)
 

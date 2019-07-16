@@ -7,8 +7,8 @@ import (
 )
 
 type ProjectUsersDB struct {
-	Uuid string
-	ProjectId int
+	Uuid        string
+	ProjectId   int
 	SpecialtyId int
 }
 
@@ -73,7 +73,7 @@ func GetProjectUsers(userDB UserDB) ([]string, error) {
 		return got, err
 	}
 
-	rows, err := Gomeisa.Db.Query("SELECT projects.name, specialties.name FROM projects, specialties, projects_users, users " +
+	rows, err := Gomeisa.Db.Query("SELECT projects.name, specialties.name FROM projects, specialties, projects_users, users "+
 		"WHERE projects_users.user_uuid = $1 AND projects.id = projects_users.project_id AND specialties.id = projects_users.specialty_id", userDB.Uuid)
 
 	if err != nil {

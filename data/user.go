@@ -5,7 +5,7 @@ import (
 )
 
 type UserDB struct {
-	Uuid string
+	Uuid  string
 	Email string
 	//Name      string
 	//Password  string

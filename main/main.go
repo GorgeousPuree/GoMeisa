@@ -19,7 +19,7 @@ var store *sessions.CookieStore
 var templates *template.Template
 
 type UserSession struct {
-	Email      string
+	Email         string
 	Authenticated bool
 }
 
