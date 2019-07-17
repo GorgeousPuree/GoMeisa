@@ -1,5 +1,0 @@
-﻿ERROR 2019/07/18 01:56:28 utils.go:24: pq: нулевое значение в столбце "uuid" нарушает ограничение NOT NULL Project could not be added to database.
-
-ERROR 2019/07/18 02:00:08 utils.go:24: pq: got 1 parameters but the statement requires 2 Project could not be added to database.
-
-ERROR 2019/07/18 02:00:57 utils.go:24: pq: got 1 parameters but the statement requires 2 Project could not be added to database./n
