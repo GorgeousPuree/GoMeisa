@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign in</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css">
+    <link rel="stylesheet" type="text/css" href = "../static/signinup.css" >
+    <script src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+</head>
+<body>
+    <div class="modal-dialog text-center">
+        <div class="col-sm-8 main-section loginForm">
+            <div class="modal-content">
+                <form class="col-12" method="post">
+                    <div class="form-group email">
+                        <input placeholder="Email" name = "email" />
+                    </div>
+                    {{/*Passwords are not supported yet*/}}
+                    <div class="form-group pass">
+                        <input placeholder="Password" name = "password"/>
+                    </div>
+                    <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i>Sign in</button>
+                </form>
+                <div class="col-12 registerOrLogin">
+                    <a href="register">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

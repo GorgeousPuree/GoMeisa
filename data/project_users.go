@@ -3,7 +3,7 @@ package data
 import (
 	"Gomeisa"
 	"database/sql"
-	"log"
+	uuid "github.com/nu7hatch/gouuid"
 )
 
 type ProjectUsersDB struct {
@@ -12,9 +12,16 @@ type ProjectUsersDB struct {
 	SpecialtyId int
 }
 
-// Need to implement: checking on same project names of user
+// Need to implement: checking whether user tries to create a project with name which he has already used
 func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 	var lastInsertID int
+
+	uuidBytes, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
+
+	projectDB.Uuid = uuidBytes.String()
 	// To prevent one SQL-query from executing if another one fails, SQL-transaction was implemented
 	tx, err := Gomeisa.Db.Begin()
 	if err != nil {
@@ -22,18 +29,8 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 	}
 
 	{
-
-		/*row, err := InsertReturning("INSERT into projects(name) values ($1) RETURNING id", projectDB.Name)
-
-		err = row.Scan(&lastInsertID)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}*/
-
-		// By this way we get unhelpful no rows in result set, if error occurs
-		err := tx.QueryRow("INSERT into projects(name) values ($1) RETURNING id", projectDB.Name).Scan(&lastInsertID)
-		if err == sql.ErrNoRows {
+		err := tx.QueryRow("INSERT into projects(uuid, name) values ($1, $2) RETURNING id", projectDB.Uuid, projectDB.Name).Scan(&lastInsertID)
+		if err != nil && err != sql.ErrNoRows {
 			tx.Rollback()
 			return err
 		}
@@ -41,9 +38,9 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 	}
 
 	{
-		userUUID, err := userDB.GetUUID()
+		err := userDB.GetUUID()
 		if err != nil {
-			log.Println(err)
+			tx.Rollback()
 			return err
 		}
 
@@ -54,43 +51,11 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 		}
 		defer stmt.Close()
 
-		if _, err := stmt.Exec(userUUID, lastInsertID); err != nil {
+		if _, err := stmt.Exec(userDB.Uuid, lastInsertID); err != nil {
 			tx.Rollback()
 			return err
 		}
 	}
 
 	return tx.Commit()
-}
-
-// Get slice of strings, which are composed of a project name and specialty of employee
-func GetProjectUsers(userDB UserDB) ([]string, error) {
-	var got []string
-	var err error
-	userDB.Uuid, err = userDB.GetUUID()
-	if err != nil {
-		log.Println(err)
-		return got, err
-	}
-
-	rows, err := Gomeisa.Db.Query("SELECT projects.name, specialties.name FROM projects, specialties, projects_users, users "+
-		"WHERE projects_users.user_uuid = $1 AND projects.id = projects_users.project_id AND specialties.id = projects_users.specialty_id", userDB.Uuid)
-
-	if err != nil {
-		return got, err
-	}
-
-	for rows.Next() {
-		var project string
-		var user string
-		err = rows.Scan(&project, &user)
-		var projectsUser = project + " - " + user
-		if err != nil {
-			return got, err
-		}
-		got = append(got, projectsUser)
-	}
-
-	rows.Close()
-	return got, err
 }

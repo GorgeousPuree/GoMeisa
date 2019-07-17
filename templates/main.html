@@ -5,16 +5,17 @@
     <title>Main</title>
 </head>
 <body>
-<form method="POST" action="/create">
-    <input type="text" placeholder="Имя проекта" name = "projectName">
-    <input type="submit" value="Создать проект">
+<form method="POST" action="/createProject">
+    <input type="text" placeholder="Name of the project" name = "projectName">
+    <input type="submit" value="Create project">
 </form>
 <form method="POST" action="/logout">
-    <input type="submit" value="Выйти из аккаунта">
+    <input type="submit" value="Logout">
 </form>
+<ul> Your projects
 {{range .}}
-<li><ul>{{.}}</ul></li>
+    <li><a href="/project">{{.}}</a></li>
 {{end}}
+</ul>
 </body>
 </html>
-

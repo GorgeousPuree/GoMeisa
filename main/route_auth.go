@@ -9,11 +9,11 @@ import (
 	"regexp"
 )
 
-func loginGetHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "login.html", nil)
+func signinGetHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "signin.html", nil)
 }
 
-func loginPostHandler(w http.ResponseWriter, r *http.Request) {
+func signinPostHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session")
 	r.ParseForm()
 	email := r.PostForm.Get("email")
@@ -22,7 +22,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 		session.AddFlash("Неверный логин")
 		err = session.Save(r, w)
 		if err != nil {
-			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -39,7 +39,7 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	err = session.Save(r, w)
 
 	if err != nil {
-		Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+		Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -47,11 +47,11 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/main", http.StatusFound)
 }
 
-func registerGetHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "registration.html", nil)
+func signupGetHandler(w http.ResponseWriter, r *http.Request) {
+	templates.ExecuteTemplate(w, "signup.html", nil)
 }
 
-func registerPostHandler(w http.ResponseWriter, r *http.Request) {
+func signupPostHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "session")
 	r.ParseForm()
 	user := data.UserDB{
@@ -61,11 +61,11 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 	pattern := `^\w+@\w+\.\w+$`
 
 	if matched, err := regexp.Match(pattern, []byte(user.Email)); !matched || err != nil {
-		session.AddFlash("Недопустимый email!")
+		session.AddFlash("Email is not valid!")
 
 		err = session.Save(r, w)
 		if err != nil {
-			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -75,11 +75,11 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := user.Create(); err != nil {
-		Gomeisa.Danger(err, "Невозможно зарегистрировать пользователя!")
-		session.AddFlash("Невозможно зарегистрировать пользователя!")
+		Gomeisa.Error(err, "User could not be registered/added to database.\n")
+		session.AddFlash("User could not be registered!")
 		err = session.Save(r, w)
 		if err != nil {
-			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -92,13 +92,13 @@ func mainGetHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "session")
 	userSession := getUserSession(session)
 
-	// If the user is unauthorized, add flash message and return an unauthorized status
+	// If the userDB is unauthorized, add flash message and return
 	if auth := userSession.Authenticated; !auth {
-		session.AddFlash("Войдите в аккаунт!")
+		session.AddFlash("Sign in account!")
 
 		err := session.Save(r, w)
 		if err != nil {
-			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -106,10 +106,10 @@ func mainGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := data.UserDB{Email: userSession.Email}
-	projectsUser, err := data.GetProjectUsers(user)
+	userDB := data.UserDB{Email: userSession.Email}
+	projectsUser, err := userDB.GetUserProjects()
 	if err != nil {
-		Gomeisa.Danger(err, "Ошибка считывания проектов пользователя")
+		Gomeisa.Error(err, "Error occurred while trying to read user's projects.\n")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -125,23 +125,23 @@ func logoutPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := session.Save(r, w)
 	if err != nil {
-		Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+		Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-func createPostHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "session")
+func createProjectPostHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "session")
 	userSession := getUserSession(session)
 
 	if auth := userSession.Authenticated; !auth {
-		session.AddFlash("Войдите в аккаунт!")
-
+		session.AddFlash("Sign in account!")
 		err := session.Save(r, w)
+
 		if err != nil {
-			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -155,12 +155,11 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	pattern := `.*\S.*`
 
 	if matched, err := regexp.Match(pattern, []byte(projectName)); !matched || err != nil {
-		log.Printf("Недопустимое имя проекта! %s\n", err)
-		session.AddFlash("Недопустимое имя проекта!")
+		session.AddFlash("Project name is not valid!")
 
 		err := session.Save(r, w)
 		if err != nil {
-			Gomeisa.Danger(err, "Ошибка сохранения сессии.")
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -172,16 +171,54 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	project := data.ProjectDB{Name: projectName}
 	user := data.UserDB{Email: userSession.Email}
 
-	err = data.CreateProjectUsers(user, project)
+	err := data.CreateProjectUsers(user, project)
 
 	if err != nil {
-		Gomeisa.Danger(err, "Невозможно создать проект!")
+		Gomeisa.Error(err, "Project could not be added to database.\n")
 		log.Println(err)
-		session.AddFlash("Невозможно создать проект!")
+		session.AddFlash("Project could not be created!")
 		session.Save(r, w)
 	}
 
 	http.Redirect(w, r, "/main", http.StatusFound)
+}
+
+// Need to implement: scanning project uuid from URL.
+// Now just passing '1' at 207 line.
+func projectGetHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "session")
+	userSession := getUserSession(session)
+	userDB := data.UserDB{Email:userSession.Email}
+
+	// If the user is unauthorized, add flash message and return
+	if auth := userSession.Authenticated; !auth {
+		session.AddFlash("Sign in your account!")
+		err := session.Save(r, w)
+
+		if err != nil {
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// If user tries to get an access to project in which he's not in, he gets an error
+	if exists := userDB.InProject("1"); !exists {
+		session.AddFlash("You have no access to this project!")
+		err := session.Save(r, w)
+
+		if err != nil {
+			Gomeisa.Error(err, "Error occurred while trying to save session.\n")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/main", http.StatusSeeOther)
+		return
+	}
+
+	templates.ExecuteTemplate(w, "project.html", nil)
 }
 
 func getUserSession(s *sessions.Session) UserSession {

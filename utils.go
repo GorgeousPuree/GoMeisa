@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 )
 
 var Db *sql.DB
 var logger *log.Logger
-var symbols = []rune("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+//var symbols = []rune("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func init() {
 	file, err := os.OpenFile("gomeisa.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -20,11 +19,12 @@ func init() {
 	logger = log.New(file, "INFO ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func Danger(args ...interface{}) {
+func Error(args ...interface {}) {
 	logger.SetPrefix("ERROR ")
 	logger.Println(args...)
 }
 
+/*
 // used for generating cookie id and invite key
 func GenerateString(length int) string {
 
@@ -33,7 +33,7 @@ func GenerateString(length int) string {
 		b[i] = symbols[rand.Intn(len(symbols))]
 	}
 	return string(b)
-}
+}*/
 
 func RowExists(query string, args ...interface{}) bool {
 	var exists bool

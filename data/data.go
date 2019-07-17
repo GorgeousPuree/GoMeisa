@@ -1,14 +1,10 @@
 package data
 
-import (
-	"Gomeisa"
-	"database/sql"
-)
-
 type Creator interface {
 	Create() (int, error)
 }
 
+/*
 // No way to see an Insert error from QueryRow().
 // The problem is if QueryRow() with an INSERT...RETURNING fails,
 // then the error is a rather unhelpful no rows in result set.
@@ -41,3 +37,4 @@ func InsertReturning(query string, args ...interface{}) (*DbRowFromInsert, error
 
 	return &DbRowFromInsert{rows: rows}, nil
 }
+*/

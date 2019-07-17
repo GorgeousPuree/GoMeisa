@@ -1,0 +1,177 @@
+* {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+body {
+	background: #eee;
+	font: 16px/1.33 Arial, sans-serid;
+}
+
+textarea {
+	font: inherit;
+}
+button {
+	background: none;
+	border: none;
+	font: inherit;
+	cursor: pointer;
+}
+
+.d-flex {
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+}
+.container {
+	max-width: 1200px;
+	margin: auto;
+}
+
+header {
+	background: #fff;
+	height: 60px;
+	-webkit-box-shadow: 0 0 16px rgba(0,0,0,.1);
+	box-shadow: 0 0 16px rgba(0,0,0,.1);
+}
+/*HEADER*/
+.h-menu {
+	height: 100%;
+	justify-content: space-between;
+	align-items: center;
+}
+
+/*WRAP*/
+.main,
+.sidebar {
+	background: #fff;
+}
+.btn-cont {
+	width: 100%;
+	justify-content: center;
+	overflow-y: hidden;
+}
+.s-btn {
+	margin: 15px 10px;
+	margin-bottom: 0;
+	border: 2px solid #4285f4;
+	padding: 5px;
+	color: #4285f4;
+}
+.s-btn:hover {
+	background: #4285f4;
+	color: #fff;
+}
+.s-textarea {
+	width: 100%;
+	border: 1px solid #ccc;
+	padding: 5px;
+	resize: vertical;
+}
+/*MAIN*/
+.wrapper {
+	margin-top: 25px;
+}
+.main {
+	width: 100%;
+}
+.main-block {
+	padding-bottom: 30px;
+	margin-top: 20px;
+}
+.main-block:not(:last-child) {
+	border-bottom: 1px solid #ccc;
+}
+
+.m-add-contact {
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+	justify-content: flex-end;
+}
+.main-container {
+	max-width: 500px;
+	width: 100%;
+	margin: auto;
+}
+
+.main-lb {
+	background: #eee;
+	padding: 10px;
+	margin: 15px 0;
+}
+.main-lb-header {
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+/*SIDEBAR*/
+.sidebar {
+	flex-shrink: 0;
+	width: 300px;
+	margin-left: 25px;
+}
+.sidebar-contacts {
+	overflow-y: auto;
+	max-height: calc(100vh - 220px);
+}
+.main-header,
+.sidebar-header {
+	font-size: 1.1rem;
+	text-align: center;
+	font-weight: bold;
+	padding: 15px 0;
+	color: #4285f4;
+}
+.sidebar-header {
+	border-bottom: 2px solid #ccc;
+}
+.sidebar-contact {
+	padding: 15px;
+	border-bottom: 1px solid #ccc;
+}
+.sidebar-cont-name {
+	font-weight: bold;
+	color: #444;
+}
+.sidebar-cont-des {
+	max-height: 3.8rem;
+	overflow-y: hidden;
+}
+
+.sidebar-contact:hover .sidebar-cont-func {
+	height: 50px;
+}
+.sidebar-cont-func {
+	transition: .3s;
+	height: 0;
+}
+
+@media screen and (max-width: 1240px) {
+	.container{
+		max-width: 992px;
+	}
+}
+@media screen and (max-width: 992px) {
+	.container{
+		max-width: 768px;
+	}
+}
+@media screen and (max-width: 768px) {
+	.container{
+		max-width: 576px;
+	}
+}
+@media screen and (max-width: 576px) {
+	.container{
+		max-width: 100%;
+	}
+}

@@ -26,15 +26,17 @@ type UserSession struct {
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/login", loginGetHandler).Methods("GET")
-	r.HandleFunc("/login", loginPostHandler).Methods("POST")
+	r.HandleFunc("/login", signinGetHandler).Methods("GET")
+	r.HandleFunc("/login", signinPostHandler).Methods("POST")
 	r.HandleFunc("/logout", logoutPostHandler).Methods("POST")
 
-	r.HandleFunc("/register", registerGetHandler).Methods("GET")
-	r.HandleFunc("/register", registerPostHandler).Methods("POST")
+	r.HandleFunc("/register", signupGetHandler).Methods("GET")
+	r.HandleFunc("/register", signupPostHandler).Methods("POST")
 
 	r.HandleFunc("/main", mainGetHandler).Methods("GET")
-	r.HandleFunc("/create", createPostHandler).Methods("POST")
+	r.HandleFunc("/createProject", createProjectPostHandler).Methods("POST")
+
+	r.HandleFunc("/project", projectGetHandler).Methods("GET")
 
 	r.HandleFunc("/", mainGetHandler)
 
@@ -67,7 +69,7 @@ func init() {
 	connStr := "user=postgres password=12345 dbname=gomeisa sslmode=disable"
 	Gomeisa.Db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		Gomeisa.Danger(err, "Ошибка открытия базы данных.")
+		Gomeisa.Error(err, "Error occurred while trying to open database.\n")
 		log.Fatal(err)
 	}
 	return
