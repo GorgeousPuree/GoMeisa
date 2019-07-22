@@ -1,0 +1,35 @@
+{{ define "content" }}
+
+    <div class="m-add-contact"><a href="/project/{{.Project.Uuid}}/">
+            <button class="s-btn">Main</button>
+        </a></div>
+    <div class="m-add-contact"><a href="/project/{{.Project.Uuid}}/invite">
+            <button class="s-btn">Invite employee</button>
+        </a></div>
+
+    <!-- BLOCK -->
+    <div class="main-block">
+        <div class="main-container">
+            <ul>
+                <li>Not implemented</li>
+                {{ if eq .Specialty "Technical leader"}}
+                    <button class="s-btn">Remove</button>
+                {{end}}
+                <li>Not implemented</li>
+                {{ if eq .Specialty "Technical leader"}}
+                    <button class="s-btn">Remove</button>
+                {{end}}
+
+            </ul>
+            {{ if eq .Specialty "Technical leader"}}
+                <form>
+                    <textarea class="s-textarea"></textarea>
+                    <div class="d-flex btn-cont main-cont">
+                        <button class="s-btn">Add task</button>
+                    </div>
+                </form>
+            {{ end }}
+        </div>
+    </div>
+
+{{ end }}

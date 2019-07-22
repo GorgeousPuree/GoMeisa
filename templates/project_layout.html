@@ -1,0 +1,61 @@
+{{ define "layout" }}
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <base href="/">
+        <title>GoMeisa - {{.Project.Name}}</title>
+        <link rel="stylesheet" type="text/css" href="../static/project.css">
+    </head>
+    <body>
+    <!-- HEADER -->
+    <header>
+        {{ template "navbar" . }}
+    </header>
+
+    <!-- WRAPPER -->
+    <div class="d-flex container wrapper">
+        <!-- CONTENT -->
+        <div class="main">
+            {{/*            <div class="m-btn"><a href="/project/{{.}}/tasks"><button class="s-btn">Project tasks</button></a></div>*/}}
+            {{ template  "content" . }}
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">Employees</div>
+
+            <!-- CONTACTS -->
+            <div class="sidebar-contacts">
+                <!-- CONTACT BLOCK -->
+
+                {{ $Employees := .Employees}}
+                {{ $Specialty := .Specialty}}
+                {{ range $Employee := $Employees}}
+                    <div class="sidebar-contact">
+                        <div class="sidebar-cont-name">{{ $Employee.Email }}</div>
+                        <div class="sidebar-cont-des">{{ $Employee.Specialty}}</div>
+                        <div class="d-flex btn-cont sidebar-cont-func">
+                            {{/*                            <button class="s-btn">Info</button>*/}}
+                            {{ if eq $Specialty "Technical leader"}}
+                                {{ if eq $Employee.Specialty "Technical leader"}}
+                                    <button class="s-btn">No actions provided!</button>
+                                {{ else }}
+                                    <button class="s-btn">Remove</button>
+                                {{ end }}
+                            {{ else }}
+                                <button class="s-btn">No actions provided!</button>
+                            {{end}}
+                        </div>
+                    </div>
+                {{ end }}
+
+            </div>
+        </div>
+    </div>
+    </body>
+    </html>
+{{ end }}

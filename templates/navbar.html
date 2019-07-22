@@ -1,0 +1,17 @@
+{{ define "navbar" }}
+
+    <div class="d-flex container h-menu">
+        <div><a href="/projects">GoMeisa</a></div>
+        <div>
+            {{/*TODO: refactor header*/}}
+            <div style="float: left; text-align: center; vertical-align: middle; line-height: 60px;">Welcome, {{ .Username}}</div>
+            <div style="float: right">
+                <form action="/logout" method="POST">
+                    {{/*            <button class="s-btn">Logout</button>*/}}
+                    <input class="s-btn" type="submit" value="Logout">
+                </form>
+            </div>
+        </div>
+    </div>
+
+{{ end }}

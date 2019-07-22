@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
-	"html/template"
 	"log"
 	"math/rand"
 	"net/http"
@@ -16,30 +15,31 @@ import (
 )
 
 var store *sessions.CookieStore
-var templates *template.Template
-
-type UserSession struct {
-	Email         string
-	Authenticated bool
-}
 
 func main() {
 	r := mux.NewRouter()
+	projectRouter := r.PathPrefix("/project/{key:[^ ]+}/").Subrouter()
+	inviteRouter := projectRouter.PathPrefix("/invite").Subrouter()
+	taskRouter := projectRouter.PathPrefix("/tasks").Subrouter()
 
-	r.HandleFunc("/login", signinGetHandler).Methods("GET")
-	r.HandleFunc("/login", signinPostHandler).Methods("POST")
+	r.HandleFunc("/signin", signinGetHandler).Methods("GET")
+	r.HandleFunc("/signin", signinPostHandler).Methods("POST")
 	r.HandleFunc("/logout", logoutPostHandler).Methods("POST")
 
-	r.HandleFunc("/register", signupGetHandler).Methods("GET")
-	r.HandleFunc("/register", signupPostHandler).Methods("POST")
+	r.HandleFunc("/signup", signupGetHandler).Methods("GET")
+	r.HandleFunc("/signup", signupPostHandler).Methods("POST")
+	r.HandleFunc("/join/{key:[^ ]+}/", joinPostHandler)
 
-	r.HandleFunc("/main", mainGetHandler).Methods("GET")
+	r.HandleFunc("/projects", projectsGetHandler).Methods("GET")
 	r.HandleFunc("/createProject", createProjectPostHandler).Methods("POST")
 
-	r.HandleFunc("/project", projectGetHandler).Methods("GET")
+	projectRouter.HandleFunc("", projectGetHandler).Methods("GET")
+	inviteRouter.HandleFunc("", inviteGetHandler).Methods("GET")
+	inviteRouter.HandleFunc("", invitePostHandler).Methods("POST")
+	taskRouter.HandleFunc("", tasksGetHandler).Methods("GET")
 
-	r.HandleFunc("/", mainGetHandler)
 
+	r.HandleFunc("/", projectsGetHandler)
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
 		http.FileServer(http.Dir("./static/"))))
 
@@ -62,8 +62,7 @@ func init() {
 	}
 
 	// Registering the custom UserSession type with gob encoding package so it can be written as a session value.
-	gob.Register(UserSession{})
-	templates = template.Must(template.ParseGlob("templates/*.html"))
+	gob.Register(Gomeisa.UserSession{})
 
 	var err error
 	connStr := "user=postgres password=12345 dbname=gomeisa sslmode=disable"

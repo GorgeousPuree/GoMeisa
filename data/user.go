@@ -2,7 +2,6 @@ package data
 
 import (
 	"Gomeisa"
-	"database/sql"
 	"github.com/nu7hatch/gouuid"
 )
 
@@ -23,16 +22,6 @@ func (userDB *UserDB) Create() (int, error) {
 
 	userDB.Uuid = uuidBytes.String()
 
-	/*rows, err := InsertReturning("INSERT into users(uuid, email) values ($1, $2) RETURNING id", userDB.Uuid, userDB.Email)
-	if err != nil {
-		return lastInsertId, err
-	}
-
-	err = rows.Scan(&lastInsertId)
-	if err != nil {
-		return lastInsertId, err
-	}*/
-
 	err = Gomeisa.Db.QueryRow("INSERT into users(uuid, email) values ($1, $2) RETURNING id", userDB.Uuid, userDB.Email).Scan(&lastInsertId)
 	if err != nil {
 		return lastInsertId, err
@@ -41,18 +30,18 @@ func (userDB *UserDB) Create() (int, error) {
 	return lastInsertId, nil
 }
 
-func (userDB *UserDB, ) InProject(projectUUID string) bool {
+func (userDB *UserDB) InProject(projectUUID string) bool {
 	var exists bool
-	err := userDB.GetUUID()
+	err := userDB.ReadUUID()
 	if err != nil {
 		Gomeisa.Error(err, "Error occurred while trying to read data from db.\n")
 	}
 
-	err = Gomeisa.Db.QueryRow("SELECT EXISTS(SELECT pu.project_id FROM projects_users as pu " +
-		"JOIN projects as p ON p.id = pu.project_id " +
+	err = Gomeisa.Db.QueryRow("SELECT EXISTS(SELECT pu.project_id FROM projects_users as pu "+
+		"JOIN projects as p ON p.id = pu.project_id "+
 		"AND pu.user_uuid = $1 AND p.uuid = $2)", userDB.Uuid, projectUUID).Scan(&exists)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
 		Gomeisa.Error(err, "Error occurred while trying to read data from db.\n")
 		return exists
 	}
@@ -60,24 +49,24 @@ func (userDB *UserDB, ) InProject(projectUUID string) bool {
 }
 
 // Reading UUID of user from db, writing it to userDB.Uuid and returning error.
-// Use userDB.Uuid to get an access to filled with GetUUID() method uuid.
-func (userDB *UserDB) GetUUID() error {
+// Use userDB.Uuid to get an access to filled with ReadUUID() method uuid.
+func (userDB *UserDB) ReadUUID() error {
 	row := Gomeisa.Db.QueryRow("SELECT uuid FROM users WHERE email=$1", userDB.Email)
 	err := row.Scan(&userDB.Uuid)
 	return err
 }
 
 // Get map with project uuid as key and project name with specialty name of user as value
-func(userDB *UserDB) GetUserProjects() (map[string]string, error) {
-	got := make (map[string]string)
-	err := userDB.GetUUID()
+func (userDB *UserDB) GetUserProjects() (map[string]string, error) {
+	got := make(map[string]string)
+	err := userDB.ReadUUID()
 	if err != nil {
 		return got, err
 	}
 
 	// Selecting all userDB's projects
-	rows, err := Gomeisa.Db.Query("SELECT projects.uuid, projects.name, specialties.name FROM projects, projects_users, specialties " +
-		"WHERE projects_users.user_uuid = $1 AND projects_users.project_id = projects.id " +
+	rows, err := Gomeisa.Db.Query("SELECT projects.uuid, projects.name, specialties.name FROM projects, projects_users, specialties "+
+		"WHERE projects_users.user_uuid = $1 AND projects_users.project_id = projects.id "+
 		"AND projects_users.specialty_id = specialties.id", userDB.Uuid)
 
 	if err != nil {
@@ -98,4 +87,43 @@ func(userDB *UserDB) GetUserProjects() (map[string]string, error) {
 
 	rows.Close()
 	return got, err
+}
+
+func (userDB *UserDB) Join(inviteKey string) (string, error) {
+	var projectId int
+	var projectUUID string
+
+	tx, err := Gomeisa.Db.Begin()
+	if err != nil {
+		return projectUUID, err
+	}
+
+	{
+		err := tx.QueryRow("INSERT into projects_users (user_uuid, project_id, specialty_id)"+
+			"SELECT $1, project_id, specialty_id FROM invitations WHERE key = $2 returning project_id", userDB.Uuid, inviteKey).Scan(&projectId)
+
+		if err != nil  {
+			tx.Rollback()
+			return projectUUID, err
+		}
+	}
+
+	{
+		err := tx.QueryRow("SELECT uuid FROM projects WHERE id = $1", projectId).Scan(&projectUUID)
+
+		if err != nil {
+			tx.Rollback()
+			return projectUUID, err
+		}
+	}
+
+	{
+		_, err := tx.Exec("DELETE FROM invitations WHERE key = $1", inviteKey)
+
+		if err != nil {
+			tx.Rollback()
+			return projectUUID, err
+		}
+	}
+	return projectUUID, tx.Commit()
 }

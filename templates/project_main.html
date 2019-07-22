@@ -1,0 +1,49 @@
+{{ define "content" }}
+
+    {{ if eq .Specialty "Technical leader"}}
+        <div class="m-add-contact"><a href="/project/{{.Project.Uuid}}/invite">
+                <button class="s-btn">Invite employee</button>
+            </a></div>
+    {{ end }}
+    <div class="m-add-contact"><a href="/project/{{.Project.Uuid}}/tasks">
+            <button class="s-btn">Project tasks</button>
+        </a></div>
+
+    <!-- BLOCK -->
+    <div class="main-block">
+        <div class="main-header">Project '{{ .Project.Name}}' description</div>
+        <div class="main-container">
+            <form>
+                <textarea class="s-textarea"></textarea>
+                <div class="d-flex btn-cont main-cont">
+                    {{ if eq .Specialty "Technical leader"}}
+                        <button class="s-btn">Change description</button>
+                    {{ end }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BLOCK -->
+    <div class="main-block">
+        <div class="main-container">
+            <form>
+                <textarea class="s-textarea" placeholder="Add report..."></textarea>
+                <div class="d-flex btn-cont main-cont">
+                    <button class="s-btn">Add report</button>
+                </div>
+            </form>
+            <div class="main-lb">
+                <div class="main-lb-header">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam velit,
+                    similique enim omnis, dolore tempore? Doloribus sapiente eius aut veritatis, ipsa harum debitis
+                    corporis eum, ipsam impedit aperiam velit. Iure.
+                </div>
+                <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. At tempora libero laborum, error
+                    accusantium ad nesciunt nobis eius quaerat. Tempora veniam, numquam iste minus libero ab sed nisi
+                    doloribus nostrum.
+                </div>
+            </div>
+        </div>
+    </div>
+
+{{ end }}

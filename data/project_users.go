@@ -2,7 +2,6 @@ package data
 
 import (
 	"Gomeisa"
-	"database/sql"
 	uuid "github.com/nu7hatch/gouuid"
 )
 
@@ -12,7 +11,8 @@ type ProjectUsersDB struct {
 	SpecialtyId int
 }
 
-// Need to implement: checking whether user tries to create a project with name which he has already used
+// TODO: checking whether user tries to create a project with name which he has already used.
+// TODO: regenerating project UUID if it duplicates
 func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 	var lastInsertID int
 
@@ -30,7 +30,7 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 
 	{
 		err := tx.QueryRow("INSERT into projects(uuid, name) values ($1, $2) RETURNING id", projectDB.Uuid, projectDB.Name).Scan(&lastInsertID)
-		if err != nil && err != sql.ErrNoRows {
+		if err != nil  {
 			tx.Rollback()
 			return err
 		}
@@ -38,7 +38,7 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 	}
 
 	{
-		err := userDB.GetUUID()
+		err := userDB.ReadUUID()
 		if err != nil {
 			tx.Rollback()
 			return err

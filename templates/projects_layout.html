@@ -1,0 +1,46 @@
+{{ define "layout" }}
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <base href="/">
+        <title>GoMeisa - Projects</title>
+        <link rel="stylesheet" type="text/css" href="../static/project.css">
+    </head>
+    <body>
+
+    <!-- HEADER -->
+    <header>
+        {{ template "navbar" . }}
+    </header>
+
+    <!-- WRAPPER -->
+    <div class="d-flex container wrapper">
+        <!-- CONTENT -->
+        <div class="main">
+
+            <div class="main-header">Your projects</div>
+            <!-- BLOCK -->
+            <div class="main-block">
+                <div class="main-container">
+                    <form method="POST" action="/createProject">
+                        <input type="text" placeholder="Name of the project" name="projectName">
+                        <input type="submit" value="Create project" class="s-btn">
+                    </form>
+                    <ul>
+                        {{range $key, $value := .UserProjects}}
+                            <li><a href="/project/{{ $key }}/">{{ $value }}</a></li>
+                        {{end}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </body>
+    </html>
+
+{{ end }}
