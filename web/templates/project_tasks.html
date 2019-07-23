@@ -1,0 +1,44 @@
+{{ define "content" }}
+
+    <div class="m-add-contact"><a href="/project/{{.Project.Uuid}}">
+            <button class="s-btn">Main</button>
+        </a></div>
+    {{ if eq .Specialty "Technical leader"}}
+        <div class="m-add-contact"><a href="/project/{{.Project.Uuid}}/invite">
+                <button class="s-btn">Invite employee</button>
+            </a></div>
+    {{end}}
+
+    <!-- BLOCK -->
+    <div class="main-block">
+        <div class="main-container">
+            {{ $Employees := .Employees}}
+            {{ $Tasks := .Tasks }}
+            <ul>
+                {{ range $Task := $Tasks}}
+                    <li>
+                        {{ $Task.Description}} - {{ $Task.Email }}
+                    </li>
+                {{ end }}
+            </ul>
+        </div>
+    </div>
+
+    <!-- BLOCK -->
+    <div class="main-block">
+        <div class="main-container">
+            {{ if eq .Specialty "Technical leader"}}
+                <form action="/project/{{.Project.Uuid}}/tasks" method="POST">
+                    <textarea name="task"></textarea>
+                    <select name="employees" >
+                        {{ range $Employee := $Employees }}
+                            <option value= {{ $Employee.Email }}> {{ $Employee.Email }}</option>
+                        {{ end }}
+                    </select>
+                    <input type="submit" class="s-btn" value="Pin task">
+                </form>
+            {{ end }}
+        </div>
+    </div>
+
+{{ end }}

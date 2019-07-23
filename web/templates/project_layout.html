@@ -34,6 +34,7 @@
 
                 {{ $Employees := .Employees}}
                 {{ $Specialty := .Specialty}}
+                {{ $Project := .Project }}
                 {{ range $Employee := $Employees}}
                     <div class="sidebar-contact">
                         <div class="sidebar-cont-name">{{ $Employee.Email }}</div>
@@ -44,7 +45,7 @@
                                 {{ if eq $Employee.Specialty "Technical leader"}}
                                     <button class="s-btn">No actions provided!</button>
                                 {{ else }}
-                                    <button class="s-btn">Remove</button>
+                                    <a href="/project/{{ $Project.Uuid}}/removeEmployee/{{ $Employee.Email }}"><input type="submit" class="s-btn" value="Remove"></a>
                                 {{ end }}
                             {{ else }}
                                 <button class="s-btn">No actions provided!</button>
@@ -52,7 +53,6 @@
                         </div>
                     </div>
                 {{ end }}
-
             </div>
         </div>
     </div>

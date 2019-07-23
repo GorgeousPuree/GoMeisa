@@ -13,11 +13,11 @@
     <div class="main-block">
         <div class="main-header">Project '{{ .Project.Name}}' description</div>
         <div class="main-container">
-            <form>
-                <textarea class="s-textarea"></textarea>
+            <form action="/project/{{.Project.Uuid}}/updateProjectDescription" method="POST">
+                <textarea class="s-textarea" name="projectDescription">{{ .Project.Description}} </textarea>
                 <div class="d-flex btn-cont main-cont">
                     {{ if eq .Specialty "Technical leader"}}
-                        <button class="s-btn">Change description</button>
+                        <input type="submit" class="s-btn" value="Update project description">
                     {{ end }}
                 </div>
             </form>

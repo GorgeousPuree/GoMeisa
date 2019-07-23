@@ -1,7 +1,7 @@
 package data
 
 import (
-	"Gomeisa"
+	"Gomeisa/pkg/utils"
 	uuid "github.com/nu7hatch/gouuid"
 )
 
@@ -20,10 +20,10 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 	if err != nil {
 		return err
 	}
-
 	projectDB.Uuid = uuidBytes.String()
+
 	// To prevent one SQL-query from executing if another one fails, SQL-transaction was implemented
-	tx, err := Gomeisa.Db.Begin()
+	tx, err := utils.Db.Begin()
 	if err != nil {
 		return err
 	}
@@ -44,14 +44,14 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 			return err
 		}
 
-		stmt, err := tx.Prepare(`INSERT into projects_users(user_uuid, project_id) values ($1, $2);`)
+		stmt, err := tx.Prepare(`INSERT into projects_users(project_id, user_id) SELECT $1, users.id FROM users WHERE users.uuid = $2`)
 		if err != nil {
 			tx.Rollback()
 			return err
 		}
 		defer stmt.Close()
 
-		if _, err := stmt.Exec(userDB.Uuid, lastInsertID); err != nil {
+		if _, err := stmt.Exec(lastInsertID, userDB.Uuid); err != nil {
 			tx.Rollback()
 			return err
 		}

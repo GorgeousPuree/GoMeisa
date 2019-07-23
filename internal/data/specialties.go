@@ -1,6 +1,8 @@
 package data
 
-import "Gomeisa"
+import (
+	"Gomeisa/pkg/utils"
+)
 
 type SpecialtyDB struct {
 	Id  string
@@ -14,7 +16,7 @@ func GetSpecialties() ([]SpecialtyDB, error) {
 	got := []SpecialtyDB{}
 
 	// Selecting all userDB's projects
-	rows, err := Gomeisa.Db.Query("SELECT * FROM specialties WHERE name != 'Технический лидер'")
+	rows, err := utils.Db.Query("SELECT * FROM specialties WHERE name != 'Технический лидер'")
 
 	if err != nil {
 		return got, err
