@@ -1,6 +1,6 @@
 # GoMeisa
 
-##GoMeisa is designed like a Trello-Redmine prototype.
+## GoMeisa is designed like a Trello-Redmine prototype.
  
 **Key features:**
 - authentication based on cookies;
