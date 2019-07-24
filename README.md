@@ -11,5 +11,5 @@ he is added to table "projects_users" and brand new generated link is deleted fr
 user is in project or not.
 - role functional. Only technical leader (admin) can change project description, pin tasks and remove employees. 
 Regular users cannot do this;
-- views based on templates (layout, content, navbar);
-- minimalistic front-end.
+- migration up support;
+- views based on templates (layout, content, navbar). Minimalistic front-end.
