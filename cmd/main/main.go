@@ -20,7 +20,6 @@ func main() {
 	projectRouter := r.PathPrefix("/project/{key}").Subrouter()
 	inviteRouter := projectRouter.PathPrefix("/invite").Subrouter()
 	taskRouter := projectRouter.PathPrefix("/tasks").Subrouter()
-	//removeRouter := projectRouter.PathPrefix("/removeEmployee/{email}").Subrouter()
 
 	r.HandleFunc("/signin", api.SigninGetHandler).Methods("GET")
 	r.HandleFunc("/signin", api.SigninPostHandler).Methods("POST")
@@ -32,13 +31,15 @@ func main() {
 
 	r.HandleFunc("/projects", api.ProjectsGetHandler).Methods("GET")
 	r.HandleFunc("/createProject", api.ProjectPostHandler).Methods("POST")
-
 	projectRouter.HandleFunc("", api.ProjectGetHandler).Methods("GET")
-	//removeRouter.HandleFunc("", removeEmployeeHandler).Methods("POST")
-	// Those functions are POST-methods.
+
+	// TODO: call handler with the help of jQuery data-methods
+	// This function is POST-method, but because of calling it with link from view it cannot be marked properly.
 	projectRouter.HandleFunc("/removeEmployee/{email}", api.RemoveEmployeeHandler)
+
 	// UPDATE method
 	projectRouter.HandleFunc("/updateProjectDescription", api.UpdateProjectDescriptionHandler).Methods("POST")
+
 	projectRouter.HandleFunc("/addReportDescription", api.AddReportHandler).Methods("POST")
 
 	inviteRouter.HandleFunc("", api.InviteGetHandler).Methods("GET")

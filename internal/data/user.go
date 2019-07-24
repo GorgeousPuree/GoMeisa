@@ -8,6 +8,7 @@ import (
 type UserDB struct {
 	Uuid  string
 	Email string
+	HashedPassword []byte
 	//Name      string
 	//Password  string
 	//CreatedAt time.Time
@@ -22,12 +23,20 @@ func (userDB *UserDB) Add() (int, error) {
 
 	userDB.Uuid = uuidBytes.String()
 
-	err = utils.Db.QueryRow("INSERT into users(uuid, email) values ($1, $2) RETURNING id", userDB.Uuid, userDB.Email).Scan(&lastInsertId)
+	err = utils.Db.QueryRow("INSERT into users(uuid, email, password) values ($1, $2, $3) RETURNING id", userDB.Uuid, userDB.Email, userDB.HashedPassword).Scan(&lastInsertId)
 	if err != nil {
 		return lastInsertId, err
 	}
 
 	return lastInsertId, nil
+}
+
+func (userDB *UserDB) ReadHashedPassword() error {
+	err := utils.Db.QueryRow("SELECT password FROM users where email = $1", userDB.Email).Scan(&userDB.HashedPassword)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (userDB *UserDB) IsInProject(projectUUID string) bool {

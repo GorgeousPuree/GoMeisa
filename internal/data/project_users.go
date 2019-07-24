@@ -34,7 +34,6 @@ func CreateProjectUsers(userDB UserDB, projectDB ProjectDB) error {
 			tx.Rollback()
 			return err
 		}
-
 	}
 
 	{

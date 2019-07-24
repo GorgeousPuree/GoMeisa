@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gorilla/sessions"
 	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"regexp"
@@ -31,13 +32,35 @@ func SigninGetHandler(w http.ResponseWriter, r *http.Request) {
 func SigninPostHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := usession.Store.Get(r, "session")
 	r.ParseForm()
-	email := r.PostForm.Get("email")
+	userDB := data.UserDB{
+		Email: r.PostForm.Get("email"),
+	}
+	password := r.PostForm.Get("password")
 
-	if !RowExists("SELECT id FROM users WHERE email=$1", email) {
+	if !RowExists("SELECT id FROM users WHERE email=$1", userDB.Email) {
 		session.AddFlash("Invalid login!")
 		err := session.Save(r, w)
 		if err != nil {
-			utils.Error(err, "Error occurred while trying to save .\n")
+			utils.Error(err, "Error occurred while trying to save session.\n")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/signin", http.StatusFound)
+		return
+	}
+
+	err := userDB.ReadHashedPassword()
+	if err != nil {
+		utils.Error(err, "Error occurred while trying to save .\n")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err = bcrypt.CompareHashAndPassword([]byte(userDB.HashedPassword), []byte(password)); err != nil {
+		session.AddFlash("Invalid password!")
+		err := session.Save(r, w)
+		if err != nil {
+			utils.Error(err, "Error occurred while trying to save session.\n")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -46,12 +69,12 @@ func SigninPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userSession := &usession.UserSession{
-		Email:         email,
+		Email:         userDB.Email,
 		Authenticated: true,
 	}
 
 	session.Values["userSession"] = userSession
-	err := session.Save(r, w)
+	err = session.Save(r, w)
 
 	if err != nil {
 		utils.Error(err, "Error occurred while trying to save session.\n")
@@ -69,13 +92,29 @@ func SignupGetHandler(w http.ResponseWriter, r *http.Request) {
 func SignupPostHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := usession.Store.Get(r, "session")
 	r.ParseForm()
-	user := data.UserDB{
+	userDB := data.UserDB{
 		Email: r.PostFormValue("email"),
 	}
 
-	pattern := `^\w+@\w+\.\w+$`
+	password := r.PostFormValue("password")
+	confirmPassword := r.PostForm.Get("confirmPassword")
 
-	if matched, err := regexp.Match(pattern, []byte(user.Email)); !matched || err != nil {
+	if password != confirmPassword {
+		session.AddFlash("Password and confirm password should be same!")
+		err := session.Save(r, w)
+		if err != nil {
+			utils.Error(err, "Error occurred while trying to save session.\n")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/signup", http.StatusFound)
+		return
+	}
+
+	patternEmail := `^\w+@\w+\.\w+$`
+	patternPassword := `^.{6,}$`
+
+	if matched, err := regexp.Match(patternEmail, []byte(userDB.Email)); !matched || err != nil {
 		session.AddFlash("Email is not valid!")
 
 		err = session.Save(r, w)
@@ -89,7 +128,29 @@ func SignupPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := user.Add(); err != nil {
+	if matched, err := regexp.Match(patternPassword, []byte(password)); !matched || err != nil {
+		session.AddFlash("Password must be at least 6 characters long!")
+
+		err = session.Save(r, w)
+		if err != nil {
+			utils.Error(err, "Error occurred while trying to save session.\n")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/signup", http.StatusFound)
+		return
+	}
+
+	var err error
+	userDB.HashedPassword, err = bcrypt.GenerateFromPassword([]byte(password), 8)
+	if err !=nil {
+		utils.Error(err, "Error occurred while trying to hash password.\n")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if _, err := userDB.Add(); err != nil {
 		// There is no need to log "duplicate key value violates unique" error
 		if _, ok := err.(*pq.Error); ok {
 			session.AddFlash("Email has already been taken!")

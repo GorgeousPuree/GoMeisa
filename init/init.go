@@ -1,6 +1,7 @@
 package init
 
 import (
+	"Gomeisa/internal/migrations"
 	"Gomeisa/internal/usession"
 	"Gomeisa/pkg/utils"
 	"encoding/gob"
@@ -25,6 +26,13 @@ func init() {
 	}
 	utils.Logger = log.New(file, "INFO ", log.Ldate|log.Ltime|log.Lshortfile)
 
+	err = utils.ConnectDB()
+	if err != nil {
+		log.Fatalln("Failed to open connect DB.\n", err)
+	}
+
+	migrations.Up()
+
 	rand.Seed(time.Now().UnixNano())
 	authKeyOne := securecookie.GenerateRandomKey(64)
 	encryptionKeyOne := securecookie.GenerateRandomKey(32)
@@ -40,9 +48,4 @@ func init() {
 	}
 
 	gob.Register(usession.UserSession{})
-	err = utils.ConnectDB()
-	if err != nil {
-		log.Fatalln("Failed to open connect DB.\n", err)
-	}
-	return
 }
