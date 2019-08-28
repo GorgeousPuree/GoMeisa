@@ -13,3 +13,5 @@ user is in project or not.
 Regular users cannot do this;
 - migration up support;
 - views based on templates (layout, content, navbar). Minimalistic front-end.
+
+### This project requires a lot of impovements such as writing middleware instead of using repeating code in controllers, building docker container and adding new functional.
